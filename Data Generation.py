@@ -10,23 +10,29 @@ def main():
     seed_string3 = "a"
     for i in range(50):
         seed_string3 = seed_string3 + str(ord(seed_string3[-1]) + 1)
-    seed_string4 = ""
-    seed_string5 = ''.join(random.choices(string.ascii_uppercase + string.digits, k=50))
+    seed_string4 = ''.join(random.choices(string.ascii_uppercase + string.digits, k=50))
 
-    strings_from_string1 = generate_new_strings(seed_string1)
-    strings_from_string2 = generate_new_strings(seed_string2)
-    strings_from_string3 = generate_new_strings(seed_string3)
+    attack_seed_string = "0" * 50
+
+    # strings_from_string1 = generate_new_strings(seed_string1, 100000)
+    # strings_from_string2 = generate_new_strings(seed_string2, 100000)
+    # strings_from_string3 = generate_new_strings(seed_string3, 100000)
+    # strings_from_string4 = generate_new_strings(seed_string4, 100000)
+    strings_from_attack_strings = generate_new_strings(attack_seed_string, 1000)
     # new_strings = generate_new_strings(seed_string)
-    find_similar_strings(strings_from_string1, seed_string1)
-    find_similar_strings(strings_from_string2, seed_string2)
-    find_similar_strings(strings_from_string3, seed_string3)
+    # find_similar_strings(strings_from_string1, seed_string1)
+    # find_similar_strings(strings_from_string2, seed_string2)
+    # find_similar_strings(strings_from_string3, seed_string3)
+    # find_similar_strings(strings_from_string4, seed_string4)
+    print(strings_from_attack_strings)
 
 
-def generate_new_strings(seed_string):
+
+def generate_new_strings(seed_string, no_of_strings):
     population = [0, 1, 2, 3, 4, 5, 6]
     weights = [0.8, 0.15, 0.025, 0.02, 0.0025, 0.002, 0.005]
     new_strings = []
-    for i in range(100000):
+    for i in range(no_of_strings):
         variations = choices(population, weights, k=len(seed_string))
         new_string = ""
         for i in range(len(seed_string)):
@@ -40,7 +46,7 @@ def find_similar_strings(new_strings, seed_string):
     safe_strings = []
     unsafe_strings = []
     for string in new_strings:
-        if SequenceMatcher(None, string, seed_string).ratio() > 0.15:
+        if SequenceMatcher(None, string, seed_string).ratio() > 0.5:
             safe_strings.append(string)
         else:
             unsafe_strings.append(string)
