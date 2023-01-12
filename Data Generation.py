@@ -2,6 +2,8 @@ import random
 import string
 from random import choices
 from difflib import SequenceMatcher
+import csv
+from functools import reduce
 
 
 def main():
@@ -13,19 +15,17 @@ def main():
     seed_string4 = ''.join(random.choices(string.ascii_uppercase + string.digits, k=50))
 
     attack_seed_string = "0" * 50
+    attack_strings = generate_new_strings(attack_seed_string, 1000)
+    for i in range(len(attack_strings)):
+        attack_strings[i] = (attack_strings[i], True)
 
-    # strings_from_string1 = generate_new_strings(seed_string1, 100000)
-    # strings_from_string2 = generate_new_strings(seed_string2, 100000)
-    # strings_from_string3 = generate_new_strings(seed_string3, 100000)
-    # strings_from_string4 = generate_new_strings(seed_string4, 100000)
-    strings_from_attack_strings = generate_new_strings(attack_seed_string, 1000)
-    # new_strings = generate_new_strings(seed_string)
-    # find_similar_strings(strings_from_string1, seed_string1)
-    # find_similar_strings(strings_from_string2, seed_string2)
-    # find_similar_strings(strings_from_string3, seed_string3)
-    # find_similar_strings(strings_from_string4, seed_string4)
-    print(strings_from_attack_strings)
+    strings_to_write_to_csv = [find_outlier_strings(generate_new_strings(seed_string1, 100000), seed_string1),
+                               find_outlier_strings(generate_new_strings(seed_string2, 100000), seed_string2),
+                               find_outlier_strings(generate_new_strings(seed_string3, 100000), seed_string3),
+                               find_outlier_strings(generate_new_strings(seed_string4, 100000), seed_string4),
+                               attack_strings]
 
+    write_to_csv(reduce(lambda x, y: x + y, strings_to_write_to_csv))
 
 
 def generate_new_strings(seed_string, no_of_strings):
@@ -39,22 +39,27 @@ def generate_new_strings(seed_string, no_of_strings):
             new_string = new_string + chr(ord(seed_string[i]) + (1 * variations[i] if
                                                                  random.random() < 0.5 else -1 * variations[i]))
         new_strings.append(new_string)
+    print("Strings generated")
     return new_strings
 
 
-def find_similar_strings(new_strings, seed_string):
-    safe_strings = []
-    unsafe_strings = []
+def find_outlier_strings(new_strings, seed_string):
+    strings = []
     for string in new_strings:
-        if SequenceMatcher(None, string, seed_string).ratio() > 0.5:
-            safe_strings.append(string)
+        if SequenceMatcher(None, string, seed_string).ratio() > 0.2:
+            strings.append((string, False))
         else:
-            unsafe_strings.append(string)
+            strings.append((string, True))
 
-    print(safe_strings)
-    print("There are " + str(len(safe_strings)) + " safe strings")
-    print(unsafe_strings)
-    print("There are " + str(len(unsafe_strings)) + " unsafe strings")
+    return strings
+
+
+def write_to_csv(strings):
+    with open('Test_Data.csv', 'w', newline='') as out:
+        csv_out = csv.writer(out)
+        csv_out.writerow(['String', 'Attack'])
+        for row in strings:
+            csv_out.writerow(row)
 
 
 if __name__ == '__main__':
